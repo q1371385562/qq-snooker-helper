@@ -6,9 +6,6 @@
 * 完整的遮挡分析，支持组合球
 * 袋口半遮挡避让，可行域计算，进球概率估算
 
-
-![img](https://user-images.githubusercontent.com/24822467/93710301-23978000-fb78-11ea-9908-eac1c8f8ae19.png)
-
 ## 使用方法
 **开启即可，当鼠标位于理论击球点附近，就可以自动吸附到正确位置。**
 * 开始， 暂停，用于开启，关闭辅助瞄准功能
@@ -23,15 +20,11 @@
 
 ### 图像提取模块：extract
 提取画面，在hsv空间，利用区域分析，像素统计，形态学等方法，识别球桌，以及每个球的位置，类型。
-![Figure_1](https://user-images.githubusercontent.com/24822467/93711266-732d7a00-fb7f-11ea-9fa9-e2dd856cd81f.png)
 
 ### 球桌对象及控件分析：table
 table定义了点，线，面，球等基础几何对象，并在此基础上组装成Table对象，可以用于球的可视化与策略生成。
-![s1](https://user-images.githubusercontent.com/24822467/93711457-1af77780-fb81-11ea-9531-287d7243c705.png)
 
 生成红球击打策略，禁止组合球
-
-![s2](https://user-images.githubusercontent.com/24822467/93711460-1e8afe80-fb81-11ea-8b8d-28d3542d5757.png)
 
 生成红球击打策略，允许组合球
 
@@ -40,8 +33,6 @@ table定义了点，线，面，球等基础几何对象，并在此基础上组
 
 ### 应用程序界面：frame
 使用tkinter搭建应用界面
-
-![frame](https://user-images.githubusercontent.com/24822467/93711523-b7217e80-fb81-11ea-832e-8915f20bf327.png)
 
 ## 尚待完善
 1. 算法比较通用，但是一些搜索参数可能会受到分辨率影响，目前只在自己的机器上做过测试。
