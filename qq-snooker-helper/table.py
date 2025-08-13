@@ -1,13 +1,17 @@
-import matplotlib.pyplot as plt
-from skimage.io import imread
+try:
+    import matplotlib.pyplot as plt
+except ModuleNotFoundError:
+    plt = None
+try:
+    import numpy as np
+except ModuleNotFoundError:
+    np = None
 from time import time
-import numpy as np
-from math import sin, cos, pi, asin, acos
+from math import sin, cos, pi, asin, atan2, hypot
 pi2, pi = pi * 2, pi
 
 def anglex(dx, dy):
-    a = acos(dx / (dx**2 + dy**2)**0.5)
-    return a if dy > 0 else pi * 2 - a
+    return atan2(dy, dx) % pi2
 
 class Arc:
     def __init__(self, a1, a2):
@@ -19,7 +23,7 @@ class Arc:
 
     def mid(self):
         v = self.a1 + self.value()/2
-        return v % (np.pi*2)
+        return v % pi2
 
     def contain(self, v):
         da1 = (v - self.a1) % pi2
@@ -53,15 +57,16 @@ class Path:
     def shadow(self, ball):
         dv_x, dv_y = ball.x - self.frm.x, ball.y - self.frm.y
         a = anglex(dv_x, dv_y)
-        l = (dv_x**2 + dv_y**2)**0.5
-        if l > self.l : return False
-        da = asin(min(self.frm.r*2/l, 1))
+        l = hypot(dv_x, dv_y)
+        if l > self.l:
+            return False
+        da = asin(min(self.frm.r * 2 / l, 1))
         arc = Arc(a-da, a+da)
         self.arc.minus(arc)
 
     def inpoint(self, ball):
         x, y = self.get_point()
-        if ((ball.x-x)**2+(ball.y-y)**2)**0.5<ball.r*2:
+        if hypot(ball.x - x, ball.y - y) < ball.r * 2:
             self.arc.a1, self.arc.a2 = 0.1, -0.1
 
     def get_line(self):
@@ -84,7 +89,7 @@ class Ball:
         self.x, self.y, self.r, self.tp = x, y, r, tp
 
     def distance(self, ball):
-        return ((ball.x - self.x)**2 + (ball.y - self.y)**2)**0.5
+        return hypot(ball.x - self.x, ball.y - self.y)
 
     def to_line(self, line, buf=False):
         isline = isinstance(line, Line)
@@ -93,14 +98,14 @@ class Ball:
         dv2_x, dv2_y = ln.x2 - self.x, ln.y2 - self.y
         a1 = anglex(dv1_x, dv1_y)
         a2 = anglex(dv2_x, dv2_y)
-        l1 = (dv1_x**2 + dv1_y**2)**0.5
-        l2 = (dv2_x**2 + dv2_y**2)**0.5
+        l1 = hypot(dv1_x, dv1_y)
+        l2 = hypot(dv2_x, dv2_y)
         if isline:
             a1 += asin(min(self.r / l1, 1))
             a2 -= asin(min(self.r / l2, 1))
         arc = Arc(a1, a2)
         layer = 0 if isline else line.layer + 1
-        return Path(self, line, arc, (l1+l2)/2, layer)
+        return Path(self, line, arc, (l1 + l2) / 2, layer)
 
 class Table:
     def __init__(self, loc, size, back, balls, tp='black8'):
@@ -125,7 +130,8 @@ class Table:
         self.pocket = lst
         
     def show(self):
-        import numpy as np
+        if plt is None or np is None:
+            raise RuntimeError('matplotlib and numpy are required to display the table')
         plt.imshow(self.back)
         angs = np.linspace(0, np.pi*2, 36)
         rs, cs = np.cos(angs), np.sin(angs)
@@ -193,16 +199,24 @@ class Table:
             y = sin(i.arc.mid()) * i.l + i.frm.y
             # x, y, type, time, angle
             rst.append([x, y, i.to.frm.tp, abs(i.layer), min(i.to.arc.value()*1000, 100)])
-        self.hitpts = np.array(rst)
+        self.hitpts = np.array(rst) if np is not None else rst
 
 if __name__ == '__main__':
-    img = imread('https://user-images.githubusercontent.com/24822467/93710301-23978000-fb78-11ea-9908-eac1c8f8ae19.png')[:,:,:3]
-    from extract import extract_table
-    table = extract_table(img, 'snooker')
-    if isinstance(table, tuple):
-        table = Table(* table, 'snooker')
-        table.solve(1, 1)
-        start = time()
-        #table.test()
-        print(time()-start)
-        table.show()
+    try:
+        from skimage.io import imread
+    except ModuleNotFoundError:
+        print('scikit-image not installed; cannot run demo')
+    else:
+        from extract import extract_table
+        img = imread('https://user-images.githubusercontent.com/24822467/93710301-23978000-fb78-11ea-9908-eac1c8f8ae19.png')[:,:,:3]
+        table = extract_table(img, 'snooker')
+        if isinstance(table, tuple):
+            table = Table(* table, 'snooker')
+            table.solve(1, 1)
+            start = time()
+            #table.test()
+            print(time()-start)
+            if plt is not None:
+                table.show()
+            else:
+                print('matplotlib not installed; skipping visualization')
