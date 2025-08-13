@@ -81,6 +81,6 @@ if __name__ == '__main__':
     #rad_black8.pack(side='left')
     btn_mode.pack(side='left')
     thread = Thread(target=hold)
-    thread.setDaemon(True)
+    thread.daemon = True
     thread.start()
     top.mainloop()
