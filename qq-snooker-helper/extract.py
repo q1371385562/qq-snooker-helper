@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 # RGB转换HSV空间
 def rgb2hsv(rgb):
     hsv = np.zeros(rgb.shape, dtype=np.float32)
-    cmax = rgb.max(axis=-1)
-    crng = rgb.ptp(axis=-1)
+    cmax = np.max(rgb, axis=-1)
+    crng = np.ptp(rgb, axis=-1)
     np.clip(cmax, 1, 255, out=hsv[:,:,1])
     np.divide(crng, hsv[:,:,1], out=hsv[:,:,1])
     np.divide(cmax, 255, out=hsv[:,:,2])
