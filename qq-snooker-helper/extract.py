@@ -86,8 +86,9 @@ def find_ground(img, tor=5):
     hist = np.bincount(lab.ravel())
     if hist[1:].max() < 1e4: return None
     if np.argmax(hist[1:])==0: return None
-    msk = lab == np.argmax(hist[1:]) + 1
-    sr, sc = ndimg.find_objects(msk)[0]
+    idx = np.argmax(hist[1:]) + 1
+    sr, sc = ndimg.find_objects(lab)[idx-1]
+    msk = lab == idx
     loc = sr.start, sc.start
     size = sr.stop - loc[0], sc.stop - loc[1]
     return loc, size, sr, sc, msk[sr, sc]
